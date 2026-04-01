@@ -1,14 +1,13 @@
-import { describe, expect, it } from "vitest";
 import {
   resolveAgentModelFallbackValues,
   resolveAgentModelPrimaryValue,
-} from "../../src/config/model-input.js";
-import { buildMistralModelDefinition as buildCoreMistralModelDefinition } from "../../src/plugins/provider-model-definitions.js";
+} from "openclaw/plugin-sdk/provider-onboard";
+import { describe, expect, it } from "vitest";
 import {
   createConfigWithFallbacks,
   createLegacyProviderConfig,
   EXPECTED_FALLBACKS,
-} from "../../test/helpers/extensions/onboard-config.js";
+} from "../../test/helpers/plugins/onboard-config.js";
 import { buildMistralModelDefinition as buildBundledMistralModelDefinition } from "./model-definitions.js";
 import {
   applyMistralConfig,
@@ -52,11 +51,14 @@ describe("mistral onboard", () => {
     expect(mistralDefault?.maxTokens).toBe(16384);
   });
 
-  it("keeps the core and bundled mistral defaults aligned", () => {
+  it("uses the bundled mistral default model definition", () => {
     const bundled = buildBundledMistralModelDefinition();
-    const core = buildCoreMistralModelDefinition();
+    const cfg = applyMistralProviderConfig({});
+    const defaultModel = cfg.models?.providers?.mistral?.models.find(
+      (model) => model.id === bundled.id,
+    );
 
-    expect(core).toMatchObject({
+    expect(defaultModel).toMatchObject({
       id: bundled.id,
       contextWindow: bundled.contextWindow,
       maxTokens: bundled.maxTokens,
